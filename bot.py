@@ -45,39 +45,35 @@ try:
     checkout.click()
 
     # Add information
-    driver.find_element_by_id('checkout_email').send_keys(email)
+    email = wait.until(EC.presence_of_element_located((By.ID, 'checkout_email')))
+    email.send_keys(email)
+    # driver.find_element_by_id('checkout_email').send_keys(email)
     driver.find_element_by_id('checkout_shipping_address_first_name').send_keys(first_name)
     driver.find_element_by_id('checkout_shipping_address_last_name').send_keys(last_name)
     driver.find_element_by_id('checkout_shipping_address_city').send_keys(city)
     driver.find_element_by_id('checkout_shipping_address_address1').send_keys(address)
     driver.find_element_by_id('checkout_shipping_address_phone').send_keys(phone)
     driver.find_element_by_id('checkout_shipping_address_zip').send_keys(zip)
+    WAITFORCAPTCHA = input()
+    driver.find_element_by_css_selector('btn__content').click()
 
+    # Shipping method
+    continue_to_payment = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'btn__content')))
+    continue_to_payment.click()
 
-
+    # Payment method
+    cc_number = wait.until(EC.presence_of_element_located((By.ID, 'number')))
+    cc_number.send_keys(card_number)
+    driver.find_element_by_id('name').send_keys(card_name)
+    driver.find_element_by_id('expiry').send_keys(card_expiry)
+    driver.find_element_by_id('verification_value').send_keys(card_ccv)
+    driver.find_element_by_css_selector('btn__content').click()
 except:
     driver.close()
     raise Exception
 input()
-driver.close()
 
 exit()
-
-select = Select(driver.find_element_by_id('fruits01'))
-
-# select by visible text
-select.select_by_visible_text('Banana')
-
-# select by value
-select.select_by_value('1')
-
-
-names = driver.find_elements_by_css_selector('.h6 a')
-print(len(names))
-
-
-
-
 
 # driver.get('https://ca.octobersveryown.com/collections/shop-all')
 
