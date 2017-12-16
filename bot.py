@@ -3,6 +3,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import  UnexpectedAlertPresentException
+
 import json
 
 NAME = 'ROOTS'
@@ -11,19 +13,24 @@ SIZE = 'Medium'
 with open('config.json') as f:
     config = json.load(f)
 driver = webdriver.Chrome('../utils/chromedriver')
-wait = WebDriverWait(driver, 10)
+wait = WebDriverWait(driver, 6)
 
 
 try:
     driver.get('https://ca.octobersveryown.com/collections/new-arrivals')
     items = driver.find_elements_by_css_selector('.h6 a')
 
+    input("SELECT YOUT ITEM AND PRESS ENTER")
+
+    """
+    # Search for item in new-arrivals
     search_results = []
     for item in items:
         if NAME in item.text:
             search_results.append(item)
     # Do length test
     search_results[0].click()
+    """
 
     size = wait.until(EC.presence_of_element_located((By.ID, 'productSelect')))
     size_options = size.find_elements_by_tag_name("option")
@@ -39,11 +46,15 @@ try:
     add_cart.click()
 
     # Ok
-    driver.implicitly_wait(1)
-    agree = wait.until(EC.presence_of_element_located((By.ID, 'agree_box')))
-    agree.click()
-    checkout = driver.find_element_by_name('checkout')
-    checkout.click()
+    # If {Alert text : Cannot place order, conditions not met: } pops up
+    try:
+        agree = wait.until(EC.presence_of_element_located((By.ID, 'agree_box')))
+        agree.click()
+        checkout = driver.find_element_by_name('checkout')
+        checkout.click()
+    except UnexpectedAlertPresentException:
+        input("Unexpected pop up. Press enter to continue")
+        pass
 
     # Add information
     info = config['info']
@@ -65,14 +76,22 @@ try:
 
     # Payment method
     payment = config['payment']
+    cards_frame = driver.find_element_by_class_name('card-fields-iframe')
+    driver.switch_to.frame(cards_frame)
+
     cc_number = wait.until(EC.presence_of_element_located((By.ID, 'number')))
     cc_number.send_keys(payment['card_number'])
-    driver.find_element_by_id('name').send_keys(payment['card_name'])
+    cc_name = wait.until(EC.element_to_be_clickable((By.ID,'name')))
+    cc_name.click()
+    cc_name.send_keys(payment['card_name'])
+    # driver.find_element_by_id('name')
     driver.find_element_by_id('expiry').send_keys(payment['card_expiry'])
     driver.find_element_by_id('verification_value').send_keys(payment['card_ccv'])
     driver.find_element_by_css_selector('.step__footer__continue-btn').click()
+# except KeyboardInterrupt:
+#     exit()
 except Exception as e:
-    driver.close()
+    input('Got exception')
     raise e
 input()
 
